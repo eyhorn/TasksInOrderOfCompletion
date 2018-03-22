@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,20 +11,23 @@ namespace TasksInOrderOfCompletion
 		public static IEnumerable<Task<T>> InCompletionOrder<T>(this IEnumerable<Task<T>> tasks)
 		{
 			var tasksArray = tasks as Task<T>[] ?? tasks.ToArray();
-			var completionSources = tasksArray.Select(task => new TaskCompletionSource<T>()).ToArray();
+			var completionSources = tasksArray.Select(task => new TaskCompletionSource<T>())
+				.ToArray();
 			int taskIndex = -1;
 
 			foreach (var task in tasksArray)
 			{
 				task.ContinueWith(completedTask =>
-					completionSources[Interlocked.Increment(ref taskIndex)].PopulateFromCompletedTask(completedTask), 
+						completionSources[Interlocked.Increment(ref taskIndex)]
+							.PopulateFromCompletedTask(completedTask),
 					TaskContinuationOptions.ExecuteSynchronously);
 			}
 
 			return completionSources.Select(source => source.Task);
 		}
 
-		public static void PopulateFromCompletedTask<T>(this TaskCompletionSource<T> completionSource, Task<T> task)
+		public static void PopulateFromCompletedTask<T>(this TaskCompletionSource<T> completionSource,
+			Task<T> task)
 		{
 			switch (task.Status)
 			{

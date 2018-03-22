@@ -4,13 +4,18 @@ namespace TasksInOrderOfCompletion
 {
 	internal class TestTaskData
 	{
-		public TestTaskData(int id)
+		public TestTaskData(int id, int delay)
 		{
-			Id = id;
-			Date = DateTime.Now;			
+			_id = id;
+			_delay = delay;
 		}
 
-		public int Id { get; }
-		public DateTime Date { get; }
+		private readonly int _id;
+		private readonly int _delay;
+
+		public override string ToString()
+		{
+			return $"{_id} with delay {_delay}";
+		}
 	}
 }

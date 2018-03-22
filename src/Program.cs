@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace TasksInOrderOfCompletion
@@ -12,44 +8,46 @@ namespace TasksInOrderOfCompletion
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("Running tasks one by one");
-			Run(false).Wait();
+			Console.WriteLine("Retrieving task results one by one");
+			Run(ResultCollectionOrder.Serial).Wait();
 			Console.WriteLine();
-			Console.WriteLine("Running tasks in completion order");
-			Run(true).Wait();
-			Console.ReadLine();
+			Console.WriteLine("Retrieving task results in completion order");
+			Run(ResultCollectionOrder.Completion).Wait();
+			Console.WriteLine();
+			Console.WriteLine("Press any key to close...");
+			Console.ReadKey();
 		}
 
-		static async Task Run(bool isExecuteInCompletionOrder)
+		private enum ResultCollectionOrder
 		{
-			var sw = new Stopwatch();
+			Serial,
+			Completion
+		}
 
-			sw.Start();
-
+		static async Task Run(ResultCollectionOrder resultCollectionOrder)
+		{
 			var tasks = new List<Task<TestTaskData>>
 			{
-				CreateTask(1, 600),
+				CreateTask(1, 800),
 				CreateTask(2, 200),
 				CreateTask(3, 150),
 				CreateTask(4, 400)
 			};
 
-			var tasksToExecute = isExecuteInCompletionOrder ? tasks.InCompletionOrder() : tasks;
+			var tasksToExecute = resultCollectionOrder == ResultCollectionOrder.Completion 
+				? tasks.InCompletionOrder() 
+				: tasks;
 
 			foreach (var task in tasksToExecute)
 			{
 				var testTaskData = await task;
-				Console.WriteLine($"{testTaskData.Id} finished at {testTaskData.Date:o}");
+				Console.WriteLine(testTaskData);
 			}
-
-			sw.Stop();
-
-			Console.WriteLine($"Execution time is {sw.Elapsed} milliseconds");
 		}
 
 		static Task<TestTaskData> CreateTask(int id, int delay)
 		{
-			return Task.Delay(delay).ContinueWith(task => new TestTaskData(id));
+			return Task.Delay(delay).ContinueWith(task => new TestTaskData(id, delay));
 		}
 	}
 }
